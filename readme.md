@@ -4,26 +4,23 @@
 
 ## 项目背景
 
-以 `Meta-Llama-3-8B-Instruct` 为基座模型，用 LoRA 对其进行监督微调（SFT），使其能够根据指令生成展示"高宜人性"或"低宜人性"（agreeableness）特征的短视频带货脚本（产品：综合果干）。随后分别用微调后模型（custom LLM）与未微调的原始模型（non-custom LLM）生成脚本，并用中文 BERT embedding 计算生成文本与"宜人性""果干"两个概念词的余弦相似度，做统计检验对比效果。
+以 `Meta-Llama-3-8B-Instruct` 为基座模型，用 LoRA 对其进行监督微调（SFT），使其能够根据指令生成展示"高宜人性"或"低宜人性"（agreeableness）特征的短视频带货脚本（产品：综合果干）。
 
 ## 目录结构
 
 ```
-data/         用于 SFT 的训练/测试数据（JSONL，Human/Assistant 指令-脚本配对格式）
-code/         数据构建、训练、生成、评估脚本
+data/         用于 SFT 的训练/测试数据（pickle，Human/Assistant 指令-脚本配对格式）
+code/         训练、生成、评估脚本
 checkpoint/   LoRA adapter 权重（基于 Meta-Llama-3-8B-Instruct）
 results/      生成对比结果与相似度评估结果
 ```
 
 ### data/
 
-- `train.pkl`（800条）/ `test.pkl`（200条），Python pickle 格式，反序列化后是一个 dict 列表 `[{"text": "..."}, ...]`，各为高宜人性/低宜人性各半，按 80/20 分层切分，train/test 之间无重复、无泄漏。
-- 每条记录的 `text` 字段格式：`"### Human:  <生成指令> ### Assistant:  <真实高/低宜人性带货脚本>"`。
-- 原始爬取语料（社交媒体带货脚本 xlsx/docx 原文）不包含在本次发布范围内，仅发布处理后的训练数据。
+- `train.pkl`（800条）/ `test.pkl`（200条），Python pickle 格式，反序列化后是一个 dict 列表 `[{"text": "..."}, ...]`，各为高宜人性/低宜人性各半，按 80/20 分层切分。
 
 ### code/
 
-- `build_generation_corpus.py` —— 从原始标注语料（未随本仓库发布）构建上面 `data/` 里的 SFT 数据格式；保留在此仅为方法透明化记录，无法在缺少原始语料文件的情况下直接运行。
 - `sft.py` —— LoRA 监督微调训练脚本（基于 `trl.SFTTrainer`），包含 completion-only loss masking（只在 Assistant 回复部分计算 loss）。**注意**：脚本内部数据加载写的是训练时实际用的 `datasets.load_dataset("json", ...)` 读取 `./train.jsonl` / `./test.jsonl`，而本仓库 `data/` 下发布的是 `.pkl` 格式，两者不直接匹配，如需运行需自行改成用 `pickle.load` 读取 `.pkl` 文件、或将 `.pkl` 转回 jsonl。
 - `generate_comparison.py` —— 分别用原始基座模型和合并 LoRA adapter 后的模型，对"高宜人性"/"低宜人性"两组固定 prompt 各生成若干条带货脚本。
 - `evaluate_agreeableness_similarity.py` —— 用 `bert-base-chinese` 计算生成文本与"宜人性""果干"的余弦相似度，并做 Welch t 检验。
