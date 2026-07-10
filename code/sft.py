@@ -66,7 +66,6 @@ import pickle
 import torch
 from datasets import Dataset
 
-from tqdm.rich import tqdm
 from transformers import AutoTokenizer, TrainingArguments
 
 from trl import (
@@ -78,8 +77,6 @@ from trl import (
     get_quantization_config,
     get_kbit_device_map,
 )
-
-tqdm.pandas()
 
 if TRL_USE_RICH:
     logging.basicConfig(format=FORMAT, datefmt="[%X]", handlers=[RichHandler()], level=logging.INFO)

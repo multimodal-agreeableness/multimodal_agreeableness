@@ -29,11 +29,21 @@ You will also need the base model [`Meta-Llama-3-8B-Instruct`](https://llama.met
 
 ## Dataset
 
-`data/train.pkl` (800 examples) and `data/test.pkl` (200 examples) contain the supervised fine-tuning data. Each file is a pickled list of `{"text": ...}` dicts, pairing an instruction to write a short-video marketing script displaying high or low agreeableness with a real annotated script of the corresponding label. Labels are balanced (50% high / 50% low) and there is no overlap between the train and test splits.
+`data/train.pkl` (800 examples) and `data/test.pkl` (200 examples) contain the supervised fine-tuning data:
+
+- Each file is a pickled list of `{"text": ...}` dicts.
+- Each record pairs an instruction to write a short-video marketing script displaying high or low agreeableness with a real annotated script of the corresponding label.
+- Labels are balanced (50% high / 50% low agreeableness).
+- There is no overlap between the train and test splits.
 
 ## Model Checkpoint
 
-`checkpoint/` contains a LoRA adapter (`r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`) trained on top of `Meta-Llama-3-8B-Instruct`. LoRA was chosen over Retrieval-Augmented Generation (RAG) because it only adjusts a small subset of parameters, which lowers the risk of catastrophic forgetting during fine-tuning while still supporting elaborate text-generation tasks. The adapter was trained on a task-specific external store of agreeableness scripts (balanced high/low), using prompts crafted with the RACE framework so the model better internalizes the concept of "agreeableness". The weight file (`adapter_model.safetensors`, ~105MB) is tracked with Git LFS and is downloaded automatically with `git clone`.
+`checkpoint/` contains a LoRA adapter trained on top of `Meta-Llama-3-8B-Instruct`:
+
+- Configuration: `r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`.
+- LoRA was chosen over Retrieval-Augmented Generation (RAG) because it only adjusts a small subset of parameters, which lowers the risk of catastrophic forgetting during fine-tuning while still supporting elaborate text-generation tasks.
+- The adapter was trained on a task-specific external store of agreeableness scripts (balanced high/low), using prompts crafted with the RACE framework so the model better internalizes the concept of "agreeableness".
+- The weight file (`adapter_model.safetensors`, ~105MB) is tracked with Git LFS and is downloaded automatically with `git clone`.
 
 ## Usage
 
