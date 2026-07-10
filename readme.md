@@ -29,12 +29,7 @@ You will also need the base model [`Meta-Llama-3-8B-Instruct`](https://llama.met
 
 ## Dataset
 
-`data/train.pkl` (800 examples) and `data/test.pkl` (200 examples) contain the supervised fine-tuning data:
-
-- Each file is a pickled list of `{"text": ...}` dicts.
-- Each record pairs an instruction to write a short-video marketing script displaying high or low agreeableness with a real annotated script of the corresponding label.
-- Labels are balanced (50% high / 50% low agreeableness).
-- There is no overlap between the train and test splits.
+ - `data/test.pkl` 
 
 ## Model Checkpoint
 
@@ -60,7 +55,7 @@ To run the analysis, follow these steps:
 
 ## Code Structure
 
-- `sft.py` — LoRA supervised fine-tuning script (built on `trl.SFTTrainer`), with completion-only loss masking so loss is only computed on the target script, not the instruction. Loads `train.pkl` / `test.pkl`.
+- `sft.py` — LoRA supervised fine-tuning script (built on `trl.SFTTrainer`), with completion-only loss masking so loss is only computed on the target script, not the instruction. Loads `test.pkl`.
 - `generate_comparison.py` — generates short-video marketing scripts from both the base model and the LoRA-merged custom model, under matched high/low agreeableness prompts.
 - `evaluate_agreeableness_similarity.py` — computes BERT-embedding cosine similarity of generated scripts to the concepts "agreeableness" and "dried fruit", and runs Welch's t-tests between conditions.
 
