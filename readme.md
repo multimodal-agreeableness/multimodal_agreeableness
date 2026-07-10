@@ -55,7 +55,7 @@ To run the analysis, follow these steps:
 
 ## Code Structure
 
-- `sft.py` — LoRA supervised fine-tuning script (built on `trl.SFTTrainer`), with completion-only loss masking so loss is only computed on the target script, not the instruction. Loads `test.pkl`.
+- `sft.py` — LoRA supervised fine-tuning script (built on `trl.SFTTrainer`), with completion-only loss masking so loss is only computed on the target script, not the instruction. Shown as the actual training script used to produce `checkpoint/`; it reads `train.pkl`, which is not included in this release (only `test.pkl` is published).
 - `generate_comparison.py` — generates short-video marketing scripts from both the base model and the LoRA-merged custom model, under matched high/low agreeableness prompts.
 - `evaluate_agreeableness_similarity.py` — computes BERT-embedding cosine similarity of generated scripts to the concepts "agreeableness" and "dried fruit", and runs Welch's t-tests between conditions.
 

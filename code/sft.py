@@ -114,6 +114,8 @@ if __name__ == "__main__":
     ################
     # Dataset
     ################
+    # train.pkl is not included in this release (only test.pkl is published);
+    # this is the actual training script used to produce checkpoint/, shown as-is.
     data_files = {
         "train": r".\train.pkl",
         "test": r".\test.pkl"
