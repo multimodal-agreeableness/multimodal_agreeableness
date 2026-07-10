@@ -1,0 +1,31 @@
+Custom Llama3 Agreeableness — LoRA Fine-Tuning Artifacts
+Copyright (c) 2026
+
+This work (code, training data, and model checkpoint contained in this
+repository) is licensed under the Creative Commons
+Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+
+You are free to:
+  - Share — copy and redistribute the material in any medium or format
+  - Adapt — remix, transform, and build upon the material
+
+Under the following terms:
+  - Attribution — You must give appropriate credit, provide a link to
+    the license, and indicate if changes were made.
+  - NonCommercial — You may not use the material for commercial purposes.
+
+No additional restrictions — You may not apply legal terms or
+technological measures that legally restrict others from doing anything
+the license permits.
+
+Full legal text: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+Human-readable summary: https://creativecommons.org/licenses/by-nc/4.0/
+
+---
+
+Note on the base model: this repository distributes only a LoRA
+adapter trained on top of Meta's Meta-Llama-3-8B-Instruct model. It
+does not redistribute the base model's weights. Use of the base model
+is subject to Meta's own Llama 3 Community License
+(https://llama.meta.com/llama3/license/), independent of the CC BY-NC
+4.0 license above.
