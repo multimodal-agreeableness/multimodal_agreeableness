@@ -1,8 +1,9 @@
-# Custom Llama3 for Agreeableness: LoRA Fine-Tuning of a Text-Generation Model
+# Sales Effect of Perceived Influencer Agreeableness: LMM and Custom LLM
+
 
 ## Overview
 
-This repository contains the code, data, and model checkpoint used in the research paper's web appendix study "Text generation with Custom LLM". A custom LLM (Llama3-LoRA) is fine-tuned to generate short-video marketing scripts that display either high or low agreeableness.
+This repository contains the code and data used in the research paper "Sales Effect of Perceived Influencer Agreeableness: LMM and Custom LLM".
 
 ## Installation
 
@@ -31,11 +32,11 @@ You will also need the base model [`Meta-Llama-3-8B-Instruct`](https://llama.met
 
 `data/train.pkl` (800 examples) and `data/test.pkl` (200 examples) contain the supervised fine-tuning data. Each file is a pickled list of `{"text": ...}` dicts, pairing an instruction to write a short-video marketing script displaying high or low agreeableness with a real annotated script of the corresponding label. Labels are balanced (50% high / 50% low) and there is no overlap between the train and test splits.
 
-The original raw annotated corpus is not included in this repository; only the processed fine-tuning data above is released.
+
 
 ## Model Checkpoint
 
-`checkpoint/` contains a LoRA adapter (`r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`) trained on top of `Meta-Llama-3-8B-Instruct`. The weight file (`adapter_model.safetensors`, ~105MB) is tracked with Git LFS and is downloaded automatically with `git clone`.
+`checkpoint/` contains a LoRA adapter (`r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`) trained on top of `Meta-Llama-3-8B-Instruct`. LoRA was chosen over Retrieval-Augmented Generation (RAG) because it only adjusts a small subset of parameters, which lowers the risk of catastrophic forgetting during fine-tuning while still supporting elaborate text-generation tasks. The adapter was trained on a task-specific external store of agreeableness scripts (balanced high/low), using prompts crafted with the RACE framework so the model better internalizes the concept of "agreeableness". The weight file (`adapter_model.safetensors`, ~105MB) is tracked with Git LFS and is downloaded automatically with `git clone`.
 
 ## Usage
 
