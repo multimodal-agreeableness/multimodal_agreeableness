@@ -17,14 +17,14 @@ results/      生成对比结果与相似度评估结果
 
 ### data/
 
-- `train.jsonl`（800条）/ `test.jsonl`（200条），各为高宜人性/低宜人性各半，按 80/20 分层切分，train/test 之间无重复、无泄漏。
-- 每条样本格式：`{"text": "### Human:  <生成指令> ### Assistant:  <真实高/低宜人性带货脚本>"}`。
+- `train.pkl`（800条）/ `test.pkl`（200条），Python pickle 格式，反序列化后是一个 dict 列表 `[{"text": "..."}, ...]`，各为高宜人性/低宜人性各半，按 80/20 分层切分，train/test 之间无重复、无泄漏。
+- 每条记录的 `text` 字段格式：`"### Human:  <生成指令> ### Assistant:  <真实高/低宜人性带货脚本>"`。
 - 原始爬取语料（社交媒体带货脚本 xlsx/docx 原文）不包含在本次发布范围内，仅发布处理后的训练数据。
 
 ### code/
 
 - `build_generation_corpus.py` —— 从原始标注语料（未随本仓库发布）构建上面 `data/` 里的 SFT 数据格式；保留在此仅为方法透明化记录，无法在缺少原始语料文件的情况下直接运行。
-- `sft.py` —— LoRA 监督微调训练脚本（基于 `trl.SFTTrainer`），包含 completion-only loss masking（只在 Assistant 回复部分计算 loss）。脚本内数据路径按训练时的实际相对路径硬编码（`./train.jsonl` / `./test.jsonl`），如需运行需将 `data/` 下的文件放在脚本同级目录。
+- `sft.py` —— LoRA 监督微调训练脚本（基于 `trl.SFTTrainer`），包含 completion-only loss masking（只在 Assistant 回复部分计算 loss）。**注意**：脚本内部数据加载写的是训练时实际用的 `datasets.load_dataset("json", ...)` 读取 `./train.jsonl` / `./test.jsonl`，而本仓库 `data/` 下发布的是 `.pkl` 格式，两者不直接匹配，如需运行需自行改成用 `pickle.load` 读取 `.pkl` 文件、或将 `.pkl` 转回 jsonl。
 - `generate_comparison.py` —— 分别用原始基座模型和合并 LoRA adapter 后的模型，对"高宜人性"/"低宜人性"两组固定 prompt 各生成若干条带货脚本。
 - `evaluate_agreeableness_similarity.py` —— 用 `bert-base-chinese` 计算生成文本与"宜人性""果干"的余弦相似度，并做 Welch t 检验。
 
