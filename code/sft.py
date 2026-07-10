@@ -61,8 +61,10 @@ if TRL_USE_RICH:
     from rich.console import Console
     from rich.logging import RichHandler
 
+import pickle
+
 import torch
-from datasets import load_dataset
+from datasets import Dataset
 
 from tqdm.rich import tqdm
 from transformers import AutoTokenizer, TrainingArguments
@@ -116,20 +118,17 @@ if __name__ == "__main__":
     # Dataset
     ################
     data_files = {
-        "train": r".\train.jsonl",
-        "test": r".\test.jsonl"
+        "train": r".\train.pkl",
+        "test": r".\test.pkl"
     }
 
-    #     data_files = {
-    #     "train": "E:/A3_AIGC/A202402_LLAMA/honest_llama_fine_tune/openassistant-guanaco/openassistant_best_replies_train.jsonl",
-    #     "test": "E:/A3_AIGC/A202402_LLAMA/honest_llama_fine_tune/openassistant-guanaco/openassistant_best_replies_eval.jsonl"
-    # }
+    def load_pickle_dataset(path):
+        with open(path, "rb") as f:
+            records = pickle.load(f)
+        return Dataset.from_list(records)
 
-    raw_datasets = load_dataset("json", data_files=data_files)
-
-    # raw_datasets = load_dataset(args.dataset_name)
-    train_dataset = raw_datasets["train"]
-    eval_dataset = raw_datasets["test"]
+    train_dataset = load_pickle_dataset(data_files["train"])
+    eval_dataset = load_pickle_dataset(data_files["test"])
 
     ################
     # Optional rich context managers

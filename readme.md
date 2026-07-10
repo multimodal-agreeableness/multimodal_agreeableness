@@ -21,30 +21,19 @@ results/      生成对比结果与相似度评估结果
 
 ### code/
 
-- `sft.py` —— LoRA 监督微调训练脚本（基于 `trl.SFTTrainer`），包含 completion-only loss masking（只在 Assistant 回复部分计算 loss）。**注意**：脚本内部数据加载写的是训练时实际用的 `datasets.load_dataset("json", ...)` 读取 `./train.jsonl` / `./test.jsonl`，而本仓库 `data/` 下发布的是 `.pkl` 格式，两者不直接匹配，如需运行需自行改成用 `pickle.load` 读取 `.pkl` 文件、或将 `.pkl` 转回 jsonl。
+- `sft.py` —— LoRA 监督微调训练脚本（基于 `trl.SFTTrainer`），包含 completion-only loss masking（只在 Assistant 回复部分计算 loss）；数据加载读取 `./train.pkl` / `./test.pkl`。
 - `generate_comparison.py` —— 分别用原始基座模型和合并 LoRA adapter 后的模型，对"高宜人性"/"低宜人性"两组固定 prompt 各生成若干条带货脚本。
-- `evaluate_agreeableness_similarity.py` —— 用 `bert-base-chinese` 计算生成文本与"宜人性""果干"的余弦相似度，并做 Welch t 检验。
 
-运行以上脚本均需要额外安装 `Meta-Llama-3-8B-Instruct` 基座模型权重（Meta 官方发布，遵循 Meta Llama 3 Community License，未随本仓库分发）以及 `transformers`/`trl`/`peft`/`torch` 等依赖（见 `requirements.txt`）。
+
+运行以上脚本均需要额外安装 `Meta-Llama-3-8B-Instruct` 基座模型权重（Meta 官方发布【增加连接】，遵循 Meta Llama 3 Community License，未随本仓库分发）以及 `transformers`/`trl`/`peft`/`torch` 等依赖（见 `requirements.txt`）。
 
 ### checkpoint/
 
-LoRA adapter（`r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`），训练配置：`per_device_train_batch_size=4, gradient_accumulation_steps=2, learning_rate=1.41e-5, num_train_epochs=3`（有效 batch size = 8，共 300 steps，`train_loss` 收敛至约 1.96）。需配合 `Meta-Llama-3-8B-Instruct` 基座模型通过 `peft.PeftModel` 加载使用。
+LoRA adapter（`r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`），训练配置：`per_device_train_batch_size=4, gradient_accumulation_steps=2, learning_rate=1.41e-5, num_train_epochs=3`
 
-权重文件 `adapter_model.safetensors`（约105MB）超过 GitHub 单文件 100MB 的限制，通过 **Git LFS** 管理（见 `.gitattributes`），`git clone` 时会自动一并拉取，无需额外下载步骤。
+权重文件 `adapter_model.safetensors`
 
-### results/
 
-- `generation_comparison_results.json` —— custom / non-custom 模型在高/低宜人性 prompt 下各生成 10 条（共 40 条）脚本原文。
-- `agreeableness_similarity_results.csv` —— 对应的 BERT 相似度评分（宜人性/果干两个维度）。
-
-**核心结果**（n=10 每组，Welch t-test）：
-
-| 对比 | 结果 |
-| --- | --- |
-| 果干相关度：custom vs non-custom（高宜人性组，对应原论文 Table 5） | Custom 0.346 vs Non-custom 0.288，t=4.664，**p < 0.001** |
-| 宜人性相似度：custom vs non-custom（高宜人性组，对应原论文 Table 4） | Custom 0.398 vs Non-custom 0.379，t=1.457，p = 0.168 |
-| 操纵检验：custom 模型内部高 vs 低宜人性 | 高 0.398 vs 低 0.385，t=1.304，p = 0.210 |
 
 ## License
 
