@@ -1,43 +1,66 @@
-# Custom Llama3 Agreeableness — LoRA Fine-Tuning Artifacts
+# Custom Llama3 for Agreeableness: LoRA Fine-Tuning of a Text-Generation Model
 
-本仓库存放论文 Web Appendix 9（"Text generation with Custom LLM"）对应研究工作的代码、训练数据与模型 checkpoint，用于证明该项工作的实际完成情况，供审稿/存档引用。
+## Overview
 
-## 项目背景
+This repository contains the code, data, and model checkpoint used in the research paper's web appendix study "Text generation with Custom LLM". A custom LLM (Llama3-LoRA) is fine-tuned to generate short-video marketing scripts that display either high or low agreeableness.
 
-以 `Meta-Llama-3-8B-Instruct` 为基座模型，用 LoRA 对其进行监督微调（SFT），使其能够根据指令生成展示"高宜人性"或"低宜人性"（agreeableness）特征的短视频带货脚本（产品：综合果干）。
+## Installation
 
-## 目录结构
+Before running the scripts, ensure you have the following dependencies installed:
 
+- Python 3.11
+- PyTorch (CUDA build)
+- Transformers
+- TRL
+- PEFT
+- Accelerate
+- Datasets
+- Pandas
+- Numpy
+- Scipy
+
+You can install these packages using pip:
+
+```bash
+pip install -r requirements.txt
 ```
-data/         用于 SFT 的训练/测试数据（pickle，Human/Assistant 指令-脚本配对格式）
-code/         训练、生成、评估脚本
-checkpoint/   LoRA adapter 权重（基于 Meta-Llama-3-8B-Instruct）
-results/      生成对比结果与相似度评估结果
-```
 
-### data/
+You will also need the base model [`Meta-Llama-3-8B-Instruct`](https://llama.meta.com/llama3/) (Meta AI, released under the [Meta Llama 3 Community License](https://llama.meta.com/llama3/license/)), which is not redistributed in this repository and must be obtained separately.
 
-- `train.pkl`（800条）/ `test.pkl`（200条），Python pickle 格式，反序列化后是一个 dict 列表 `[{"text": "..."}, ...]`，各为高宜人性/低宜人性各半，按 80/20 分层切分。
+## Dataset
 
-### code/
+`data/train.pkl` (800 examples) and `data/test.pkl` (200 examples) contain the supervised fine-tuning data. Each file is a pickled list of `{"text": ...}` dicts, pairing an instruction to write a short-video marketing script displaying high or low agreeableness with a real annotated script of the corresponding label. Labels are balanced (50% high / 50% low) and there is no overlap between the train and test splits.
 
-- `sft.py` —— LoRA 监督微调训练脚本（基于 `trl.SFTTrainer`），包含 completion-only loss masking（只在 Assistant 回复部分计算 loss）；数据加载读取 `./train.pkl` / `./test.pkl`。
-- `generate_comparison.py` —— 分别用原始基座模型和合并 LoRA adapter 后的模型，对"高宜人性"/"低宜人性"两组固定 prompt 各生成若干条带货脚本。
+The original raw annotated corpus is not included in this repository; only the processed fine-tuning data above is released.
 
+## Model Checkpoint
 
-运行以上脚本均需要额外安装 `Meta-Llama-3-8B-Instruct` 基座模型权重（Meta 官方发布【增加连接】，遵循 Meta Llama 3 Community License，未随本仓库分发）以及 `transformers`/`trl`/`peft`/`torch` 等依赖（见 `requirements.txt`）。
+`checkpoint/` contains a LoRA adapter (`r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`) trained on top of `Meta-Llama-3-8B-Instruct`. The weight file (`adapter_model.safetensors`, ~105MB) is tracked with Git LFS and is downloaded automatically with `git clone`.
 
-### checkpoint/
+## Usage
 
-LoRA adapter（`r=64, lora_alpha=16, lora_dropout=0.05, target_modules=["q_proj","v_proj"]`），训练配置：`per_device_train_batch_size=4, gradient_accumulation_steps=2, learning_rate=1.41e-5, num_train_epochs=3`
+To run the analysis, follow these steps:
 
-权重文件 `adapter_model.safetensors`
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/multimodal-agreeableness/multimodal_agreeableness.git
+   ```
+2. Navigate to the cloned directory.
+3. Run the scripts under `code/` (training, generation, evaluation).
 
+## Code Structure
 
+- `sft.py` — LoRA supervised fine-tuning script (built on `trl.SFTTrainer`), with completion-only loss masking so loss is only computed on the target script, not the instruction. Loads `train.pkl` / `test.pkl`.
+- `generate_comparison.py` — generates short-video marketing scripts from both the base model and the LoRA-merged custom model, under matched high/low agreeableness prompts.
+- `evaluate_agreeableness_similarity.py` — computes BERT-embedding cosine similarity of generated scripts to the concepts "agreeableness" and "dried fruit", and runs Welch's t-tests between conditions.
+
+## Evaluation Metrics
+
+The code includes functions for evaluating generation quality:
+
+- Cosine similarity (BERT embedding space) between generated text and target concept words
+- Welch's t-test, comparing custom vs. base model and high- vs. low-agreeableness conditions
 
 ## License
 
-- 代码与本仓库内数据：[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)（署名-非商业性使用）。
-- 基座模型 `Meta-Llama-3-8B-Instruct` 权重不包含在本仓库中，其使用需遵循 Meta 官方的 Llama 3 Community License。
-
-详见 `LICENSE` 文件。
+Code and data in this repository are released under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) (see `LICENSE`). The base model `Meta-Llama-3-8B-Instruct` is governed separately by Meta's own Llama 3 Community License.
