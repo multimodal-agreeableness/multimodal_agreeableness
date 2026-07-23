@@ -1,8 +1,8 @@
-# Sales Effect of Perceived Influencer Agreeableness: LMM and Custom LLM
+# Sales Effect of Perceived Influencer Agreeableness: Leveraging the Power of LMM and Custom LLM
 
 ## Overview
 
-This repository contains the code and data used in the research paper "Sales Effect of Perceived Influencer Agreeableness: LMM and Custom LLM".
+This repository contains the code and data used in the research paper "Sales Effect of Perceived Influencer Agreeableness: Leveraging the Power of LMM and Custom LLM".
 
 ## Installation
 
